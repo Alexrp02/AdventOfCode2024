@@ -5,7 +5,7 @@ use std::{
     path::Path,
 };
 
-fn read_from_file<P>(filename: P) -> (Vec<u32>, Vec<u32>)
+fn read_from_file<P>(filename: P) -> (Vec<i32>, Vec<i32>)
 where
     P: AsRef<Path>,
     P: Display,
@@ -14,12 +14,14 @@ where
         Ok(file) => file,
         Err(error) => panic!("Couldn't open the file {} : {}", filename, error),
     };
-    let file_lines = BufReader::new(file).lines();
+    let file_lines = BufReader::new(file)
+        .lines()
+        .flatten();
 
-    let mut left_vector: Vec<u32> = vec![];
-    let mut right_vector: Vec<u32> = vec![];
+    let mut left_vector: Vec<i32> = vec![];
+    let mut right_vector: Vec<i32> = vec![];
 
-    for line in file_lines.flatten() {
+    for line in file_lines {
         let split: Vec<&str> = line.split("   ").collect();
         if split.len() != 2 {
             panic!(
@@ -27,7 +29,6 @@ where
                 line
             );
         }
-        println!("{:?}", split);
         left_vector.push(split[0].parse().unwrap());
         right_vector.push(split[1].parse().unwrap());
     }
@@ -38,6 +39,14 @@ where
 fn main() {
     let filename = String::from("input.txt");
     println!("Reading from the input file...");
-    let vector_pair = read_from_file(&filename);
-    println!("The right vector is: {:?}", vector_pair.0);
+    let mut vector_pair = read_from_file(&filename);
+    vector_pair.0.sort();
+    vector_pair.1.sort();
+
+    let mut sum = 0;
+    for i in 0..vector_pair.0.len() {
+        sum += (vector_pair.0[i] - vector_pair.1[i]).abs();
+    }
+
+    println!("The total difference between the two columns is {sum}");
 }
