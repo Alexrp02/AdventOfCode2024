@@ -49,4 +49,16 @@ fn main() {
     }
 
     println!("The total difference between the two columns is {sum}");
+
+    // Second part of the day
+
+    vector_pair = read_from_file(&filename);
+
+    let mut similarity_score = 0;
+    for number in vector_pair.0 {
+        let right_list_element_occurrences = vector_pair.1.iter().filter(|&&x| x == number).count();
+        similarity_score += number * (right_list_element_occurrences as i32);
+    }
+
+    println!("Similarity score is {similarity_score}");
 }
