@@ -28,7 +28,7 @@ fn read_sequences_from_file(filename: &String) -> Vec<Vec<i32>> {
 fn count_safe_sequences(sequences: &Vec<Vec<i32>>) -> i32 {
     let mut total_safe_sequences = 0;
     for sequence in sequences {
-        if check_sequence(sequence) {
+        if check_sequence(sequence, false) {
             total_safe_sequences += 1;
         }
     }
@@ -36,34 +36,61 @@ fn count_safe_sequences(sequences: &Vec<Vec<i32>>) -> i32 {
     total_safe_sequences
 }
 
-fn check_sequence(sequence: &Vec<i32>) -> bool {
+fn check_sequence(sequence: &Vec<i32>, deleted_one_interval: bool) -> bool {
     if sequence.len() == 1 {
         return true;
     }
-    if sequence[1] - sequence[0] == 0 {
-        return false;
-    }
 
-    let is_decreasing = sequence[1] - sequence[0] < 0;
+    let is_decreasing = check_decreasing(sequence);
+    let mut result = true;
 
     for (i, number) in sequence.iter().enumerate() {
         if i != sequence.len() - 1 {
             let next_number = sequence[i + 1];
             let difference = next_number - number;
 
-            if is_decreasing {
-                if difference > -1 || difference < -3 {
-                    return false;
+            if !(difference >= -3 && difference <= -1) && is_decreasing {
+                if !deleted_one_interval {
+                    let mut clone = sequence.clone();
+                    clone.remove(i);
+                    result = check_sequence(&clone, true);
+                } else {
+                    result = false;
                 }
-            } else {
-                if difference < 1 || difference > 3 {
-                    return false;
+            } else if !(difference >= 1 && difference <= 3) && !is_decreasing {
+                if !deleted_one_interval {
+                    let mut clone = sequence.clone();
+                    clone.remove(i);
+                    result = check_sequence(&clone, true);
+                } else {
+                    result = false;
                 }
             }
         }
     }
 
-    true
+    if !deleted_one_interval && !result{
+        let mut clone = sequence.clone();
+        clone.remove(sequence.len() - 1);
+        result = check_sequence(&clone, true);
+    }
+
+    result
+}
+
+fn check_decreasing(sequence: &[i32]) -> bool {
+    let mut increasing = 0;
+    let mut decreasing = 0;
+    for (i, num) in sequence.iter().enumerate() {
+        if i != sequence.len() - 1 {
+            if num > &sequence[i + 1] {
+                decreasing += 1
+            } else {
+                increasing += 1
+            }
+        }
+    }
+    return decreasing > increasing;
 }
 
 fn main() {
